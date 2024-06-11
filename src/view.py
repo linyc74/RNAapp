@@ -27,6 +27,8 @@ DEFAULT_KEY_VALUES = {
     'sample-batch-column': ['None', 'batch'],
     'skip-deseq2-gsea': False,
     'gsea-input': ['deseq2', 'tpm'],
+    'gsea-gene-name-keywords': ['None'],
+    'gsea-gene-set-name-keywords': ['None'],
     'threads': ['1', '2', '4'],
 }
 SSH_KEYS = [
@@ -51,6 +53,8 @@ RNA_KEYS = [
     'sample-batch-column',
     'skip-deseq2-gsea',
     'gsea-input',
+    'gsea-gene-name-keywords',
+    'gsea-gene-set-name-keywords',
     'threads',
 ]
 BUTTON_NAME_TO_LABEL = {
