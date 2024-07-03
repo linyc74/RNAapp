@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox
     QLineEdit, QDialogButtonBox
 
 
-DEFAULT_KEY_VALUES = {
+EDIT_KEY_TO_VALUES = {
     'User': [''],
     'Host': ['255.255.255.255'],
     'Port': ['22'],
@@ -31,94 +31,168 @@ DEFAULT_KEY_VALUES = {
     'gsea-gene-set-name-keywords': ['None'],
     'threads': ['1', '2', '4'],
 }
-SSH_KEYS = [
-    'User',
-    'Host',
-    'Port',
-    'RNA-Seq Analysis',
-]
-RNA_KEYS = [
-    'count-table',
-    'sample-info-table',
-    'gene-info-table',
-    'outdir',
-    'gene-sets-gmt',
-    'gene-length-column',
-    'gene-name-column',
-    'gene-description-column',
-    'heatmap-read-fraction',
-    'sample-group-column',
-    'control-group-name',
-    'experimental-group-name',
-    'sample-batch-column',
-    'skip-deseq2-gsea',
-    'gsea-input',
-    'gsea-gene-name-keywords',
-    'gsea-gene-set-name-keywords',
-    'threads',
-]
-BUTTON_NAME_TO_LABEL = {
+BUTTON_KEY_TO_LABEL = {
+    'basic_mode': 'Basic Mode',
+    'advanced_mode': 'Advanced Mode',
     'load_parameters': 'Load Parameters',
     'save_parameters': 'Save Parameters',
     'submit': 'Submit',
 }
 
 
+class BasicMode:
+    SSH_KEYS = [
+        'User',
+        'Host',
+        'Port',
+        'RNA-Seq Analysis',
+    ]
+    RNA_KEYS = [
+        'count-table',
+        'sample-info-table',
+        'gene-info-table',
+        'outdir',
+        'gene-sets-gmt',
+        'control-group-name',
+        'experimental-group-name',
+    ]
+    BUTTON_NAMES = [
+        'advanced_mode',
+        'load_parameters',
+        'save_parameters',
+        'submit',
+    ]
+
+
+class AdvancedMode:
+    SSH_KEYS = [
+        'User',
+        'Host',
+        'Port',
+        'RNA-Seq Analysis',
+    ]
+    RNA_KEYS = [
+        'count-table',
+        'sample-info-table',
+        'gene-info-table',
+        'outdir',
+        'gene-sets-gmt',
+        'gene-length-column',
+        'gene-name-column',
+        'gene-description-column',
+        'heatmap-read-fraction',
+        'sample-group-column',
+        'control-group-name',
+        'experimental-group-name',
+        'sample-batch-column',
+        'skip-deseq2-gsea',
+        'gsea-input',
+        'gsea-gene-name-keywords',
+        'gsea-gene-set-name-keywords',
+        'threads',
+    ]
+    BUTTON_NAMES = [
+        'basic_mode',
+        'load_parameters',
+        'save_parameters',
+        'submit',
+    ]
+
+
+class Edit:
+
+    key: str
+    qlabel: QLabel
+    qedit: Union[QComboBox, QCheckBox]
+
+    def __init__(self, key: str, qlabel: QLabel, qedit: Union[QComboBox, QCheckBox]):
+        self.key = key
+        self.qlabel = qlabel
+        self.qedit = qedit
+
+
+class Button:
+
+    key: str
+    qbutton: QPushButton
+
+    def __init__(self, key: str, qbutton: QPushButton):
+        self.key = key
+        self.qbutton = qbutton
+
+
 class View(QWidget):
 
     TITLE = 'RNAapp'
-    ICON_PNG = 'icon/logo.ico'
+    ICON_FILE = 'icon/logo.ico'
     WIDTH, HEIGHT = 800, 1000
 
+    edit_dict: Dict[str, Edit]
+    button_dict: Dict[str, Button]
+
     question_layout: QVBoxLayout
-    label_combo_pairs: List[Tuple[QLabel, QComboBox]]
-
     button_layout: QHBoxLayout
-    buttons: Dict[str, QPushButton]
-
     scroll_area: QScrollArea
     scroll_contents: QWidget
-
     main_layout: QVBoxLayout
+
+    mode: Union[BasicMode, AdvancedMode]
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle(self.TITLE)
-        self.setWindowIcon(QIcon(f'{dirname(dirname(__file__))}/{self.ICON_PNG}'))
+        self.setWindowIcon(QIcon(f'{dirname(dirname(__file__))}/{self.ICON_FILE}'))
         self.resize(self.WIDTH, self.HEIGHT)
 
-        self.__init_label_combo_pairs()
-        self.__init_buttons()
+        self.__init_edit_dict()
+        self.__init_button_dict()
+
+        self.__init_question_layout()
+        self.__init_button_layout()
         self.__init_scroll_area_and_contents()
         self.__init_main_layout()
-        self.__init_methods()
 
-    def __init_label_combo_pairs(self):
-        self.question_layout = QVBoxLayout()
-        self.label_combo_pairs = []
-        for key, values in DEFAULT_KEY_VALUES.items():
-            label = QLabel(f'{key}:', self)
+        self.__init_ui_methods()
+
+        self.show_basic_mode()
+
+    def __init_edit_dict(self):
+        self.edit_dict = {}
+        for key, values in EDIT_KEY_TO_VALUES.items():
+            qlabel = QLabel(f'{key}:', self)
+
             if type(values) is bool:
-                combo = QCheckBox(self)
-                combo.setChecked(values)
+                qedit = QCheckBox(self)
+                qedit.setChecked(values)
             else:
-                combo = QComboBox(self)
-                combo.addItems(values)
-                combo.setEditable(True)
-            self.label_combo_pairs.append((label, combo))
-            self.question_layout.addWidget(label)
-            self.question_layout.addWidget(combo)
+                qedit = QComboBox(self)
+                qedit.addItems(values)
+                qedit.setEditable(True)
 
-    def __init_buttons(self):
+            qlabel.hide()
+            qedit.hide()
+
+            self.edit_dict[key] = Edit(key=key, qlabel=qlabel, qedit=qedit)
+
+    def __init_button_dict(self):
+        self.button_dict = {}
+        for key, label in BUTTON_KEY_TO_LABEL.items():
+            qbutton = QPushButton(label, self)
+            qbutton.hide()
+            self.button_dict[key] = Button(key=key, qbutton=qbutton)
+
+    def __init_question_layout(self):
+        self.question_layout = QVBoxLayout()
+        for edit in self.edit_dict.values():
+            self.question_layout.addWidget(edit.qlabel)
+            self.question_layout.addWidget(edit.qedit)
+
+    def __init_button_layout(self):
         self.button_layout = QHBoxLayout()
         self.button_layout.addStretch(1)
         self.question_layout.addLayout(self.button_layout)
-
-        self.buttons = dict()
-        for name, label in BUTTON_NAME_TO_LABEL.items():
-            button = QPushButton(label, self)
-            self.button_layout.addWidget(button)
-            self.buttons[name] = button
+        for button in self.button_dict.values():
+            self.button_layout.addWidget(button.qbutton)
 
     def __init_scroll_area_and_contents(self):
         self.scroll_area = QScrollArea(self)
@@ -132,7 +206,7 @@ class View(QWidget):
         self.main_layout.addWidget(self.scroll_area)  # add scroll_area to the main_layout
         self.setLayout(self.main_layout)
 
-    def __init_methods(self):
+    def __init_ui_methods(self):
         self.message_box_info = MessageBoxInfo(self)
         self.message_box_error = MessageBoxError(self)
         self.message_box_yes_no = MessageBoxYesNo(self)
@@ -140,41 +214,79 @@ class View(QWidget):
         self.file_dialog_save = FileDialogSave(self)
         self.password_dialog = PasswordDialog(self)
 
+    def show_basic_mode(self):
+        self.mode = BasicMode()
+        self.__show_mode()
+
+    def show_advanced_mode(self):
+        self.mode = AdvancedMode()
+        self.__show_mode()
+
+    def __show_mode(self):
+        for edit in self.edit_dict.values():
+            if edit.key in self.mode.RNA_KEYS + self.mode.SSH_KEYS:
+                edit.qlabel.show()
+                edit.qedit.show()
+            else:
+                edit.qlabel.hide()
+                edit.qedit.hide()
+
+        for button in self.button_dict.values():
+            if button.key in self.mode.BUTTON_NAMES:
+                button.qbutton.show()
+            else:
+                button.qbutton.hide()
+
     def get_key_values(self) -> Dict[str, Union[str, bool]]:
-        return self.__get_key_values(keys=SSH_KEYS + RNA_KEYS)
+        return self.__get_key_values(keys=self.mode.SSH_KEYS + self.mode.RNA_KEYS)
 
     def get_ssh_key_values(self) -> Dict[str, Union[str, bool]]:
-        return self.__get_key_values(keys=SSH_KEYS)
+        return self.__get_key_values(keys=self.mode.SSH_KEYS)
 
     def get_rna_key_values(self) -> Dict[str, Union[str, bool]]:
-        return self.__get_key_values(keys=RNA_KEYS)
+        return self.__get_key_values(keys=self.mode.RNA_KEYS)
 
     def __get_key_values(self, keys: List[str]) -> Dict[str, str]:
         ret = {}
-        for label, item in self.label_combo_pairs:
-            k = label.text()[:-1]
-            if k not in keys:
+
+        for edit in self.edit_dict.values():
+            if edit.key not in keys:
                 continue
-            if type(item) is QComboBox:
-                ret[k] = item.currentText()
-            elif type(item) is QCheckBox:
-                ret[k] = item.isChecked()
+
+            e = edit.qedit
+            if e.isHidden():
+                continue
+
+            if type(e) is QComboBox:
+                ret[edit.key] = e.currentText()
+            elif type(e) is QCheckBox:
+                ret[edit.key] = e.isChecked()
+
         return ret
 
     def set_parameters(self, parameters: Dict[str, Union[str, bool]]):
-        # Reset flags to False because
+        # Reset all visible flags to False because
         #   when a flag is not present in parameters, it should be False
-        for _, combo in self.label_combo_pairs:
-            if type(combo) is QCheckBox:
-                combo.setChecked(False)
+        for edit in self.edit_dict.values():
+            e = edit.qedit
+            if e.isHidden():
+                continue
+            if type(e) is QCheckBox:
+                e.setChecked(False)
 
-        for key, val in parameters.items():
-            for label, combo in self.label_combo_pairs:
-                if label.text()[:-1] == key:
-                    if type(combo) is QComboBox:
-                        combo.setCurrentText(val)
-                    elif type(combo) is QCheckBox:
-                        combo.setChecked(True)  # when the key if present, the flag should be True
+        for edit in self.edit_dict.values():
+            e = edit.qedit
+            if e.isHidden():
+                continue
+
+            val = parameters.get(edit.key, None)
+            if val is None:
+                continue
+
+            if type(e) is QComboBox:
+                e.setCurrentText(val)
+            elif type(e) is QCheckBox:
+                e.setChecked(True)  # when the key if present, the flag should be True
 
 
 class MessageBox:

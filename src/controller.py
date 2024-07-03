@@ -12,20 +12,33 @@ class Controller:
     def __init__(self, io: IO, view: View):
         self.io = io
         self.view = view
-        self.__init_actions()
         self.__connect_buttons_to_actions()
         self.view.show()
 
-    def __init_actions(self):
-        self.action_load_parameters = ActionLoadParameters(self)
-        self.action_save_parameters = ActionSaveParameters(self)
-        self.action_submit = ActionSubmit(self)
-
     def __connect_buttons_to_actions(self):
-        for name, button in self.view.buttons.items():
-            action_method = getattr(self, f'action_{name}', None)
+        for button in self.view.button_dict.values():
+            key = button.key
+            qbutton = button.qbutton
+            action_method = getattr(self, f'action_{key}', None)
             if action_method is not None:
-                button.clicked.connect(action_method)
+                qbutton.clicked.connect(action_method)
+            else:
+                print(f'Warning: method "action_{key}" not found in the Controller class', flush=True)
+
+    def action_basic_mode(self):
+        self.view.show_basic_mode()
+
+    def action_advanced_mode(self):
+        self.view.show_advanced_mode()
+
+    def action_load_parameters(self):
+        ActionLoadParameters(self).exec()
+
+    def action_save_parameters(self):
+        ActionSaveParameters(self).exec()
+
+    def action_submit(self):
+        ActionSubmit(self).exec()
 
 
 class Action:
@@ -40,7 +53,7 @@ class Action:
 
 class ActionLoadParameters(Action):
 
-    def __call__(self):
+    def exec(self):
         file = self.view.file_dialog_open()
         if file == '':
             return
@@ -54,7 +67,7 @@ class ActionLoadParameters(Action):
 
 class ActionSaveParameters(Action):
 
-    def __call__(self):
+    def exec(self):
         file = self.view.file_dialog_save()
         if file == '':
             return
@@ -80,7 +93,7 @@ class ActionSubmit(Action):
     rna_cmd: str
     submit_cmd: str
 
-    def __call__(self):
+    def exec(self):
 
         self.ssh_password = self.view.password_dialog()
         if self.ssh_password == '':
