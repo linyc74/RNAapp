@@ -1,5 +1,5 @@
 from os.path import dirname
-from typing import List, Tuple, Dict, Union
+from typing import List, Dict, Union
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, \
     QPushButton, QScrollArea, QCheckBox, QMessageBox, QFileDialog, QDialog, QFormLayout, \
