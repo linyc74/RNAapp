@@ -18,6 +18,5 @@ test/*workdir*/
 build/
 dist/
 RNAapp.spec
-setup.py
 
 todo.md
