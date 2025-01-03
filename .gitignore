@@ -17,6 +17,8 @@ test/*workdir*/
 # PyInstaller / py2app
 build/
 dist/
-RNAapp.spec
+*.spec
+setup.py
+.eggs/
 
 todo.md
