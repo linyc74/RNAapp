@@ -74,11 +74,11 @@ class BuildApp:
 
         with open(self.entrypoint_py, 'w') as f:
             f.write(f'''\
-from src import EntryPoint
+from src import Main
 
 
 if __name__ == '__main__':
-    EntryPoint().main()
+    Main().main()
 ''')
 
     def write_setup_py(self):
