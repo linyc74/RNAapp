@@ -10,7 +10,7 @@ EDIT_KEY_TO_VALUES = {
     'User': [''],
     'Host': ['255.255.255.255'],
     'Port': ['22'],
-    'RNA-Seq Analysis': ['rna_seq_analysis-1.0.0'],
+    'RNA-Seq Analysis': ['rna_seq_analysis-1.1.0'],
 
     'count-table': ['count-table.csv'],
     'sample-info-table': ['sample-info-table.csv'],
@@ -29,6 +29,7 @@ EDIT_KEY_TO_VALUES = {
     'gsea-input': ['deseq2', 'tpm'],
     'gsea-gene-name-keywords': ['None'],
     'gsea-gene-set-name-keywords': ['None'],
+    'publication-figure': False,
     'threads': ['1', '2', '4'],
 }
 BUTTON_KEY_TO_LABEL = {
@@ -89,6 +90,7 @@ class AdvancedMode:
         'gsea-input',
         'gsea-gene-name-keywords',
         'gsea-gene-set-name-keywords',
+        'publication-figure',
         'threads',
     ]
     BUTTON_NAMES = [

@@ -5,7 +5,7 @@ from .view import View
 from .controller import Controller
 
 
-VERSION = 'v1.1.0-beta'
+VERSION = 'v1.1.0'
 STARTING_MESSAGE = f'''\
 RNAapp {VERSION}
 College of Dentistry, National Yang Ming Chiao Tung University (NYCU), Taiwan
