@@ -29,6 +29,15 @@ EDIT_KEY_TO_VALUES = {
     'gsea-input': ['deseq2', 'tpm'],
     'gsea-gene-name-keywords': ['None'],
     'gsea-gene-set-name-keywords': ['None'],
+    'gene-p-threshold': ['0.05'],
+    'gene-q-threshold': ['0.1'],
+    'pathway-p-threshold': ['0.05'],
+    'pathway-q-threshold': ['0.2'],
+    'organism': ['human', 'mouse', 'rat'],
+    'show-n-pathways': ['20'],
+    'colormap': ['Set1', 'Set2', 'Set3', 'tab10', 'tab20', 'tab20b', 'tab20c', 'Pastel1', 'Pastel2', 'Paired', 'Accent', 'Dark2'],
+    'invert-colors': False,
+    'publication-figure': False,
     'threads': ['1', '2', '4'],
 }
 BUTTON_KEY_TO_LABEL = {
@@ -89,6 +98,15 @@ class AdvancedMode:
         'gsea-input',
         'gsea-gene-name-keywords',
         'gsea-gene-set-name-keywords',
+        'gene-p-threshold',
+        'gene-q-threshold',
+        'pathway-p-threshold',
+        'pathway-q-threshold',
+        'organism',
+        'show-n-pathways',
+        'colormap',
+        'invert-colors',
+        'publication-figure',
         'threads',
     ]
     BUTTON_NAMES = [
