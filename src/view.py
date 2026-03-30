@@ -10,8 +10,7 @@ EDIT_KEY_TO_VALUES = {
     'User': [''],
     'Host': ['255.255.255.255'],
     'Port': ['22'],
-    'RNA-Seq Analysis': ['rna_seq_analysis-1.0.0'],
-
+    'RNA-Seq Analysis': ['rna_seq_analysis-1.1.2'],
     'count-table': ['count-table.csv'],
     'sample-info-table': ['sample-info-table.csv'],
     'gene-info-table': ['gene-info-table.csv'],
@@ -26,18 +25,10 @@ EDIT_KEY_TO_VALUES = {
     'experimental-group-name': ['tumor'],
     'sample-batch-column': ['None', 'batch'],
     'skip-deseq2-gsea': False,
+    'volcano-plot-label-genes': ['None'],
     'gsea-input': ['deseq2', 'tpm'],
     'gsea-gene-name-keywords': ['None'],
     'gsea-gene-set-name-keywords': ['None'],
-    'gene-p-threshold': ['0.05'],
-    'gene-q-threshold': ['0.1'],
-    'pathway-p-threshold': ['0.05'],
-    'pathway-q-threshold': ['0.2'],
-    'organism': ['human', 'mouse', 'rat'],
-    'show-n-pathways': ['20'],
-    'colormap': ['Set1', 'Set2', 'Set3', 'tab10', 'tab20', 'tab20b', 'tab20c', 'Pastel1', 'Pastel2', 'Paired', 'Accent', 'Dark2'],
-    'invert-colors': False,
-    'publication-figure': False,
     'threads': ['1', '2', '4'],
 }
 BUTTON_KEY_TO_LABEL = {
@@ -95,18 +86,10 @@ class AdvancedMode:
         'experimental-group-name',
         'sample-batch-column',
         'skip-deseq2-gsea',
+        'volcano-plot-label-genes',
         'gsea-input',
         'gsea-gene-name-keywords',
         'gsea-gene-set-name-keywords',
-        'gene-p-threshold',
-        'gene-q-threshold',
-        'pathway-p-threshold',
-        'pathway-q-threshold',
-        'organism',
-        'show-n-pathways',
-        'colormap',
-        'invert-colors',
-        'publication-figure',
         'threads',
     ]
     BUTTON_NAMES = [
@@ -307,6 +290,9 @@ class View(QWidget):
                 e.setChecked(True)  # when the key if present, the flag should be True
 
 
+#
+
+
 class MessageBox:
 
     TITLE: str
@@ -351,6 +337,9 @@ class MessageBoxYesNo(MessageBox):
         return self.box.exec_() == QMessageBox.Yes
 
 
+#
+
+
 class FileDialog:
 
     parent: QWidget
@@ -385,21 +374,21 @@ class FileDialogSave(FileDialog):
         d.selectNameFilter('CSV files (*.csv)')
         d.setOptions(QFileDialog.DontUseNativeDialog)
         d.setAcceptMode(QFileDialog.AcceptSave)
-        d.exec_()
 
-        files = d.selectedFiles()
-
-        name_filter = d.selectedNameFilter()
-        ext = name_filter.split('(*')[-1].split(')')[0]  # e.g. 'CSV files (*.csv)' -> '.csv'
-
-        if len(files) == 0:
-            ret = ''
-        else:
-            ret = files[0]
-            if not ret.endswith(ext):  # add file extension if not present
-                ret += ext
-
+        ret = ''  # default, no file object selected and accepted
+        accepted = d.exec_()
+        if accepted:
+            files = d.selectedFiles()
+            name_filter = d.selectedNameFilter()
+            ext = name_filter.split('(*')[-1].split(')')[0]  # e.g. 'CSV files (*.csv)' -> '.csv'
+            if len(files) > 0:
+                ret = files[0]
+                if not ret.endswith(ext):  # add file extension if not present
+                    ret += ext
         return ret
+
+
+#
 
 
 class PasswordDialog:
