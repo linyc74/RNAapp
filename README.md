@@ -11,12 +11,12 @@ A typical directory structure is shown below:
 
 ```
 ~/RNAapp/
-├── .bash_profile
+├── .profile
 └── rna_seq_analysis-1.0.0/
 ```
 
-The `.bash_profile` defines all things needed to be activated to run the `rna_seq_analysis-1.0.0`.
-An example of the `.bash_profile` is shown below:
+The `.profile` defines all things needed to be activated to run the `rna_seq_analysis-1.0.0`.
+An example of the `.profile` is shown below:
 
 ```bash
 source $HOME/anaconda3/bin/activate rna-seq 

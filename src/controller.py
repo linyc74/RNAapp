@@ -82,7 +82,7 @@ class ActionSaveParameters(Action):
 class ActionSubmit(Action):
 
     ROOT_DIR = '~/RNAapp'
-    BASH_PROFILE = '.bash_profile'
+    PROFILE = '.profile'
 
     view: View
 
@@ -145,8 +145,8 @@ class ActionSubmit(Action):
         job_name = basename(outdir).replace(' ', '_')
         sample_sheet = self.rna_key_values['sample-info-table']
 
-        # the environment (.bash_profile) needs to be activated right before the rna_cmd
-        script = f'source {self.BASH_PROFILE} && {self.rna_cmd}'
+        # the environment (.profile) needs to be activated right before the rna_cmd
+        script = f'source {self.PROFILE} && {self.rna_cmd}'
         cmd_txt = f'{outdir}/command.txt'
 
         self.submit_cmd = ' && '.join([
