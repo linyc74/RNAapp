@@ -50,33 +50,31 @@ class Action:
         self.io = controller.io
         self.view = controller.view
 
+    def exec(self):
+        try:
+            self.workflow()
+        except Exception as e:
+            self.view.message_box_error(msg=repr(e))
+
 
 class ActionLoadParameters(Action):
 
-    def exec(self):
+    def workflow(self):
         file = self.view.file_dialog_open(title='Load Parameters')
         if file == '':
             return
-
-        try:
-            parameters = self.io.read(file=file)
-            self.view.set_parameters(parameters=parameters)
-        except Exception as e:
-            self.view.message_box_error(msg=str(e))
+        parameters = self.io.read(file=file)
+        self.view.set_parameters(parameters=parameters)
 
 
 class ActionSaveParameters(Action):
 
-    def exec(self):
+    def workflow(self):
         file = self.view.file_dialog_save()
         if file == '':
             return
-
-        try:
-            parameters = self.view.get_key_values()
-            self.io.write(file=file, parameters=parameters)
-        except Exception as e:
-            self.view.message_box_error(msg=str(e))
+        parameters = self.view.get_key_values()
+        self.io.write(file=file, parameters=parameters)
 
 
 class ActionSubmit(Action):
@@ -93,8 +91,7 @@ class ActionSubmit(Action):
     rna_cmd: str
     submit_cmd: str
 
-    def exec(self):
-
+    def workflow(self):
         self.ssh_password = self.view.password_dialog()
         if self.ssh_password == '':
             return
@@ -102,16 +99,12 @@ class ActionSubmit(Action):
         if not self.view.message_box_yes_no(msg='Are you sure you want to submit the job?'):
             return
 
-        try:
-            self.get_key_values()
-            self.set_rna_cmd()
-            self.set_submit_cmd()
-            self.connect()
-            self.submit_job()
-            self.view.message_box_info(msg='Job submitted!')
-
-        except Exception as e:
-            self.view.message_box_error(msg=str(e))
+        self.get_key_values()
+        self.set_rna_cmd()
+        self.set_submit_cmd()
+        self.connect()
+        self.submit_job()
+        self.view.message_box_info(msg='Job submitted!')
 
     def get_key_values(self):
         self.ssh_key_values = self.view.get_ssh_key_values()
