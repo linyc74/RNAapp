@@ -368,17 +368,26 @@ class FileDialog:
 
 class FileDialogOpen(FileDialog):
 
-    def __call__(self) -> str:
+    def __call__(self, title: str) -> str:
         d = QFileDialog(self.parent)
         d.resize(1200, 800)
-        d.setWindowTitle('Open')
-        d.setNameFilter('All Files (*.*);;CSV files (*.csv);;TSV files (*.tsv);;tab files (*.tab);;TXT files (*.txt)')
-        d.selectNameFilter('CSV files (*.csv)')
+        d.setWindowTitle(title)
+        d.setNameFilters([
+            'All Files (*.*)',
+            'CSV Files (*.csv)',
+            'TSV Files (*.tsv)',
+            'Tab-Delimited Files (*.tab)',
+            'Text Files (*.txt)',
+        ])
+        d.selectNameFilter('CSV Files (*.csv)')
         d.setOptions(QFileDialog.DontUseNativeDialog)
         d.setFileMode(QFileDialog.ExistingFile)  # only one existing file can be selected
-        d.exec_()
-        selected = d.selectedFiles()
-        return selected[0] if len(selected) > 0 else ''
+        response = d.exec_()
+        if response == QFileDialog.Accepted:
+            selected = d.selectedFiles()
+            if len(selected) > 0:
+                return selected[0]
+        return ''
 
 
 class FileDialogSave(FileDialog):
@@ -388,22 +397,28 @@ class FileDialogSave(FileDialog):
         d.resize(1200, 800)
         d.setWindowTitle('Save As')
         d.selectFile(filename)
-        d.setNameFilter('All Files (*.*);;CSV files (*.csv);;TSV files (*.tsv);;tab files (*.tab);;TXT files (*.txt)')
-        d.selectNameFilter('CSV files (*.csv)')
+        d.setNameFilters([
+            'All Files (*.*)',
+            'CSV Files (*.csv)',
+            'TSV Files (*.tsv)',
+            'Tab-Delimited Files (*.tab)',
+            'Text Files (*.txt)',
+        ])
+        d.selectNameFilter('CSV Files (*.csv)')
         d.setOptions(QFileDialog.DontUseNativeDialog)
         d.setAcceptMode(QFileDialog.AcceptSave)
 
-        ret = ''  # default, no file object selected and accepted
         accepted = d.exec_()
-        if accepted:
+        if accepted == QFileDialog.Accepted:
             files = d.selectedFiles()
             name_filter = d.selectedNameFilter()
-            ext = name_filter.split('(*')[-1].split(')')[0]  # e.g. 'CSV files (*.csv)' -> '.csv'
+            ext = name_filter.split('(*')[-1].split(')')[0]  # e.g. 'Comma-Separated Files (*.csv)' -> '.csv'
             if len(files) > 0:
-                ret = files[0]
-                if not ret.endswith(ext):  # add file extension if not present
-                    ret += ext
-        return ret
+                f = files[0]
+                if not f.endswith(ext):  # add file extension if not present
+                    f += ext
+                return f
+        return ''
 
 
 #

@@ -54,7 +54,7 @@ class Action:
 class ActionLoadParameters(Action):
 
     def exec(self):
-        file = self.view.file_dialog_open()
+        file = self.view.file_dialog_open(title='Load Parameters')
         if file == '':
             return
 
