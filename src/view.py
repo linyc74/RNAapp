@@ -350,8 +350,9 @@ class FileDialogSave(FileDialog):
             ext = name_filter.split('(*')[-1].split(')')[0]  # e.g. 'Comma-Separated Files (*.csv)' -> '.csv'
             if len(files) > 0:
                 f = files[0]
-                if not f.endswith(ext):  # add file extension if not present
-                    f += ext
+                require_specific_ext = (ext != '.*')
+                if require_specific_ext and not f.endswith(ext):
+                    f += ext  # add file extension if the required extension is not present
                 return f
         return ''
 
