@@ -367,7 +367,7 @@ class FileDialogOpen(FileDialog):
             'Tab-Delimited Files (*.tab)',
             'Text Files (*.txt)',
         ])
-        d.selectNameFilter('CSV Files (*.csv)')
+        d.selectNameFilter('All Files (*.*)')
         d.setOptions(QFileDialog.DontUseNativeDialog)
         d.setFileMode(QFileDialog.ExistingFile)  # only one existing file can be selected
         response = d.exec_()
@@ -392,7 +392,7 @@ class FileDialogSave(FileDialog):
             'Tab-Delimited Files (*.tab)',
             'Text Files (*.txt)',
         ])
-        d.selectNameFilter('CSV Files (*.csv)')
+        d.selectNameFilter('All Files (*.*)')
         d.setOptions(QFileDialog.DontUseNativeDialog)
         d.setAcceptMode(QFileDialog.AcceptSave)
 
