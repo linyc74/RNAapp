@@ -37,73 +37,47 @@ EDIT_KEY_TO_VALUES = {
     'threads': ['1', '2', '4'],
 }
 BUTTON_KEY_TO_LABEL = {
-    'basic_mode': 'Basic Mode',
-    'advanced_mode': 'Advanced Mode',
     'load_parameters': 'Load Parameters',
     'save_parameters': 'Save Parameters',
     'submit': 'Submit',
 }
-
-
-class BasicMode:
-    SSH_KEYS = [
-        'User',
-        'Host',
-        'Port',
-        'RNA-Seq Analysis',
-    ]
-    RNA_KEYS = [
-        'outdir',
-        'control-group-name',
-        'experimental-group-name',
-    ]
-    BUTTON_NAMES = [
-        'advanced_mode',
-        'load_parameters',
-        'save_parameters',
-        'submit',
-    ]
-
-
-class AdvancedMode:
-    SSH_KEYS = [
-        'User',
-        'Host',
-        'Port',
-        'RNA-Seq Analysis',
-    ]
-    RNA_KEYS = [
-        'outdir',
-        'gene-length-column',
-        'gene-name-column',
-        'gene-description-column',
-        'heatmap-read-fraction',
-        'sample-batch-column',
-        'sample-group-column',
-        'skip-differential-analysis',
-        'control-group-name',
-        'experimental-group-name',
-        'volcano-plot-label-genes',
-        'gsea-input',
-        'gsea-gene-name-keywords',
-        'gsea-gene-set-name-keywords',
-        'gene-p-threshold',
-        'gene-q-threshold',
-        'pathway-p-threshold',
-        'pathway-q-threshold',
-        'organism',
-        'show-n-pathways',
-        'colormap',
-        'invert-colors',
-        'publication-figure',
-        'threads',
-    ]
-    BUTTON_NAMES = [
-        'basic_mode',
-        'load_parameters',
-        'save_parameters',
-        'submit',
-    ]
+SSH_KEYS = [
+    'User',
+    'Host',
+    'Port',
+    'RNA-Seq Analysis',
+]
+RNA_KEYS = [
+    'outdir',
+    'gene-length-column',
+    'gene-name-column',
+    'gene-description-column',
+    'heatmap-read-fraction',
+    'sample-batch-column',
+    'sample-group-column',
+    'skip-differential-analysis',
+    'control-group-name',
+    'experimental-group-name',
+    'volcano-plot-label-genes',
+    'gsea-input',
+    'gsea-gene-name-keywords',
+    'gsea-gene-set-name-keywords',
+    'gene-p-threshold',
+    'gene-q-threshold',
+    'pathway-p-threshold',
+    'pathway-q-threshold',
+    'organism',
+    'show-n-pathways',
+    'colormap',
+    'invert-colors',
+    'publication-figure',
+    'threads',
+]
+BUTTON_NAMES = [
+    'load_parameters',
+    'save_parameters',
+    'submit',
+]
 
 
 class Edit:
@@ -143,8 +117,6 @@ class View(QWidget):
     scroll_contents: QWidget
     main_layout: QVBoxLayout
 
-    mode: Union[BasicMode, AdvancedMode]
-
     def __init__(self):
         super().__init__()
         self.setWindowTitle(self.TITLE)
@@ -161,8 +133,6 @@ class View(QWidget):
 
         self.__init_ui_methods()
 
-        self.show_basic_mode()
-
     def __init_edit_dict(self):
         self.edit_dict = {}
         for key, values in EDIT_KEY_TO_VALUES.items():
@@ -176,8 +146,8 @@ class View(QWidget):
                 qedit.addItems(values)
                 qedit.setEditable(True)
 
-            qlabel.hide()
-            qedit.hide()
+            # qlabel.hide()
+            # qedit.hide()
 
             self.edit_dict[key] = Edit(key=key, qlabel=qlabel, qedit=qedit)
 
@@ -185,7 +155,7 @@ class View(QWidget):
         self.button_dict = {}
         for key, label in BUTTON_KEY_TO_LABEL.items():
             qbutton = QPushButton(label, self)
-            qbutton.hide()
+            # qbutton.hide()
             self.button_dict[key] = Button(key=key, qbutton=qbutton)
 
     def __init_question_layout(self):
@@ -221,37 +191,14 @@ class View(QWidget):
         self.file_dialog_save = FileDialogSave(self)
         self.password_dialog = PasswordDialog(self)
 
-    def show_basic_mode(self):
-        self.mode = BasicMode()
-        self.__show_mode()
-
-    def show_advanced_mode(self):
-        self.mode = AdvancedMode()
-        self.__show_mode()
-
-    def __show_mode(self):
-        for edit in self.edit_dict.values():
-            if edit.key in self.mode.RNA_KEYS + self.mode.SSH_KEYS:
-                edit.qlabel.show()
-                edit.qedit.show()
-            else:
-                edit.qlabel.hide()
-                edit.qedit.hide()
-
-        for button in self.button_dict.values():
-            if button.key in self.mode.BUTTON_NAMES:
-                button.qbutton.show()
-            else:
-                button.qbutton.hide()
-
     def get_key_values(self) -> Dict[str, Union[str, bool]]:
-        return self.__get_key_values(keys=self.mode.SSH_KEYS + self.mode.RNA_KEYS)
+        return self.__get_key_values(keys=SSH_KEYS + RNA_KEYS)
 
     def get_ssh_key_values(self) -> Dict[str, Union[str, bool]]:
-        return self.__get_key_values(keys=self.mode.SSH_KEYS)
+        return self.__get_key_values(keys=SSH_KEYS)
 
     def get_rna_key_values(self) -> Dict[str, Union[str, bool]]:
-        return self.__get_key_values(keys=self.mode.RNA_KEYS)
+        return self.__get_key_values(keys=RNA_KEYS)
 
     def __get_key_values(self, keys: List[str]) -> Dict[str, str]:
         ret = {}

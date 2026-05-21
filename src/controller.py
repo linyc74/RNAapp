@@ -29,12 +29,6 @@ class Controller:
             else:
                 print(f'Warning: method "action_{key}" not found in the Controller class', flush=True)
 
-    def action_basic_mode(self):
-        self.view.show_basic_mode()
-
-    def action_advanced_mode(self):
-        self.view.show_advanced_mode()
-
     def action_load_parameters(self):
         ActionLoadParameters(self).exec()
 
