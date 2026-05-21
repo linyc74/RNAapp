@@ -1,8 +1,12 @@
-from typing import Dict
-from os.path import basename
 from fabric import Connection
+from typing import Dict, Optional
+from os.path import basename, abspath
 from .io import IO
 from .view import View
+
+
+REMOTE_ROOT_DIR = 'RNAapp'  # placed in the remote user's home directory
+PROFILE_FILE = '.profile'
 
 
 class Controller:
@@ -79,19 +83,28 @@ class ActionSaveParameters(Action):
 
 class ActionSubmit(Action):
 
-    ROOT_DIR = '~/RNAapp'
-    PROFILE = '.profile'
-
-    view: View
+    count_table_local_path: str
+    sample_info_table_local_path: str
+    gene_info_table_local_path: str
+    gene_sets_gmt_local_path: str
 
     ssh_password: str
     ssh_key_values: Dict[str, str]
     rna_key_values: Dict[str, str]
-    con: Connection
     rna_cmd: str
-    submit_cmd: str
 
     def workflow(self):
+        self.count_table_local_path = self.view.file_dialog_open(title='Upload Count Table')
+        if self.count_table_local_path == '':
+            return
+        self.sample_info_table_local_path = self.view.file_dialog_open(title='Upload Sample Info Table')
+        if self.sample_info_table_local_path == '':
+            return
+        self.gene_info_table_local_path = self.view.file_dialog_open(title='Upload Gene Info Table')
+        if self.gene_info_table_local_path == '':
+            return
+        self.gene_sets_gmt_local_path = self.view.file_dialog_open(title='Upload Gene Sets GMT File (optional)')
+
         self.ssh_password = self.view.password_dialog()
         if self.ssh_password == '':
             return
@@ -99,18 +112,14 @@ class ActionSubmit(Action):
         if not self.view.message_box_yes_no(msg='Are you sure you want to submit the job?'):
             return
 
-        self.get_key_values()
-        self.set_rna_cmd()
-        self.set_submit_cmd()
-        self.connect()
-        self.submit_job()
-        self.view.message_box_info(msg='Job submitted!')
-
-    def get_key_values(self):
         self.ssh_key_values = self.view.get_ssh_key_values()
         self.rna_key_values = self.view.get_rna_key_values()
 
-    def set_rna_cmd(self):
+        self.build_rna_cmd()
+        self.connect_and_submit_job()
+        self.view.message_box_info(msg='Job submitted!')
+
+    def build_rna_cmd(self):
         program = self.ssh_key_values['RNA-Seq Analysis']
         outdir = self.rna_key_values['outdir']
 
@@ -119,46 +128,69 @@ class ActionSubmit(Action):
             if type(val) is bool:
                 if val is True:
                     args.append(f'--{key}')
-
             else:  # val is string
                 args.append(f"--{key}='{val}'")
+        
+        args.append(f"--count-table='{outdir}/{basename(self.count_table_local_path)}'")  # uploaded by the user
+        args.append(f"--sample-info-table='{outdir}/{basename(self.sample_info_table_local_path)}'")
+        args.append(f"--gene-info-table='{outdir}/{basename(self.gene_info_table_local_path)}'")
+        if self.gene_sets_gmt_local_path != '':
+            args.append(f"--gene-sets-gmt='{outdir}/{basename(self.gene_sets_gmt_local_path)}'")
+        args.append(f"2>&1 | tee '{outdir}/progress.txt'")
+        self.rna_cmd = '     '.join(args)
 
-        args.append(f'2>&1 | tee {outdir}/progress.txt')  # `2>&1` stderr to stdout --> tee to progress.txt
-
-        self.rna_cmd = ' '.join(args)
-
-        if '"' in self.rna_cmd:
-            print('Warning: double quotes in the RNA-Seq Analysis command will be replaced by single quotes', flush=True)
-            # self.rna_cmd will be wrapped in double quotes in self.submit_cmd
-            # so double quotes needs to be avoided
-            self.rna_cmd = self.rna_cmd.replace('"', '\'')
-
-    def set_submit_cmd(self):
-        outdir = self.rna_key_values['outdir']
-        job_name = basename(outdir).replace(' ', '_')
-        sample_sheet = self.rna_key_values['sample-info-table']
-
-        # the environment (.profile) needs to be activated right before the rna_cmd
-        script = f'source {self.PROFILE} && {self.rna_cmd}'
-        cmd_txt = f'{outdir}/command.txt'
-
-        self.submit_cmd = ' && '.join([
-            f'mkdir -p "{outdir}"',
-            f'cp "{sample_sheet}" "{outdir}/"',
-            f'echo "{script}" > "{cmd_txt}"',
-            f'screen -dm -S {job_name} bash "{cmd_txt}"'
-        ])
-
-    def connect(self):
+    def connect_and_submit_job(self):
+        """
+        Shell characters like './' and '~/' will work in con.run(), but not in con.put()
+        
+        To be safe, use absolute path for the remote root dir
+        The outdir is defined as relative path, but check if it traverses outside the remote root dir (security issues)
+        """
         s = self.ssh_key_values
-        self.con = Connection(
+        con = Connection(
             host=s['Host'],
             user=s['User'],
             port=int(s['Port']),
             connect_kwargs={'password': self.ssh_password}
         )
 
-    def submit_job(self):
-        with self.con.cd(self.ROOT_DIR):
-            self.con.run(self.submit_cmd, echo=True)  # echo=True for printing out the command
-        self.con.close()
+        user = self.ssh_key_values['User']
+        remote_root = f'/home/{user}/{REMOTE_ROOT_DIR}'  # absolute path
+        outdir = self.rna_key_values['outdir']  # relative path
+
+        assert is_subdir(parent=remote_root, child=f'{remote_root}/{outdir}'), \
+            f'The outdir "{outdir}" traverses outside the remote root directory, not safe!'
+
+        with con.cd(remote_root):
+            con.run(f'mkdir -p "{outdir}"', echo=True)
+
+        for local_path in [
+            self.count_table_local_path,
+            self.sample_info_table_local_path,
+            self.gene_info_table_local_path,
+            self.gene_sets_gmt_local_path,
+        ]:
+            if local_path == '':
+                continue
+            print(f'Uploading "{basename(local_path)}" to remote directory "{remote_root}/{outdir}/"', flush=True)
+            con.put(
+                local=local_path,
+                remote=f'{remote_root}/{outdir}/'  # absolute path
+            )
+
+        # the environment (.profile) needs to be activated right before the rna_cmd
+        script = f'source {PROFILE_FILE} && {self.rna_cmd}'
+        cmd_txt = f'{outdir}/command.txt'
+        job_name = basename(outdir).replace(' ', '_')
+
+        with con.cd(remote_root):
+            con.run(f'echo "{script}" > "{cmd_txt}"', echo=True)
+            con.run(f'screen -dm -S {job_name} bash "{cmd_txt}"', echo=True)
+
+        con.close()
+
+
+def is_subdir(parent: str, child: str) -> bool:
+    p = abspath(parent)
+    c = abspath(child)
+    return c.startswith(p)

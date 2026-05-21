@@ -11,11 +11,7 @@ EDIT_KEY_TO_VALUES = {
     'Host': ['255.255.255.255'],
     'Port': ['22'],
     'RNA-Seq Analysis': ['rna_seq_analysis-1.2.0'],
-    'count-table': ['count-table.csv'],
-    'sample-info-table': ['sample-info-table.csv'],
-    'gene-info-table': ['gene-info-table.csv'],
     'outdir': ['outdir'],
-    'gene-sets-gmt': ['None'],
     'gene-length-column': ['gene_length'],
     'gene-name-column': ['gene_name'],
     'gene-description-column': ['None', 'gene_description'],
@@ -57,11 +53,7 @@ class BasicMode:
         'RNA-Seq Analysis',
     ]
     RNA_KEYS = [
-        'count-table',
-        'sample-info-table',
-        'gene-info-table',
         'outdir',
-        'gene-sets-gmt',
         'control-group-name',
         'experimental-group-name',
     ]
@@ -81,11 +73,7 @@ class AdvancedMode:
         'RNA-Seq Analysis',
     ]
     RNA_KEYS = [
-        'count-table',
-        'sample-info-table',
-        'gene-info-table',
         'outdir',
-        'gene-sets-gmt',
         'gene-length-column',
         'gene-name-column',
         'gene-description-column',
